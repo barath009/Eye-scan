@@ -43,6 +43,13 @@ const CameraInterface = () => {
   const startCamera = async () => {
     try {
       setCameraError("");
+
+      // ✅ Ensure we are in a browser (not SSR)
+      if (typeof window === "undefined" || !navigator.mediaDevices) {
+        setCameraError("Camera not supported in this environment.");
+        return;
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       streamRef.current = stream;
       if (videoRef.current) {
@@ -100,12 +107,9 @@ const CameraInterface = () => {
       sendFrame();
     } catch (err: any) {
       console.error("Camera error:", err);
-      if (err.name === "NotAllowedError")
-        setCameraError("Camera access denied.");
-      else if (err.name === "NotFoundError")
-        setCameraError("No camera found.");
-      else setCameraError("Unable to access camera.");
+      setCameraError(`Camera error: ${err?.name || "Unknown"} - ${err?.message || err}`);
     }
+
   };
 
   const startAnalysis = () => {
